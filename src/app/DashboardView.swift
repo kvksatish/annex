@@ -150,17 +150,23 @@ private struct PeerRow: View {
 private struct LiveCard: View {
     @EnvironmentObject var model: AppModel
 
+    private var latency: String {
+        let ms = model.stats.latencyMs
+        if ms <= 0 { return "–" }
+        return ms < 1 ? "<1" : String(format: ms < 10 ? "%.1f" : "%.0f", ms)
+    }
+
     var body: some View {
         Card(title: "Live") {
             HStack {
                 StatTile(value: "\(Int(model.stats.fps))", unit: "fps", label: "Smoothness")
                 StatTile(value: String(format: "%.1f", model.stats.mbps), unit: "Mbps", label: "Speed")
-                StatTile(value: model.stats.latencyMs > 0 ? String(format: "%.0f", model.stats.latencyMs) : "–",
+                StatTile(value: latency,
                          unit: "ms", label: "Latency")
                 StatTile(value: model.stats.cable ? "Cable" : "Wi-Fi", unit: "", label: "Connection")
             }
             Sparkline(values: model.speedHistory).frame(height: 40)
-            Text("\(model.stats.width) × \(model.stats.height) on \(model.targetPeer?.name ?? "the other Mac") · frames only send when something changes")
+            Text(verbatim: "\(model.stats.width) × \(model.stats.height) on \(model.targetPeer?.name ?? "the other Mac") · frames only send when something changes")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

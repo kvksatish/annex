@@ -246,14 +246,15 @@ final class AppModel: ObservableObject {
               let first = defaults.object(forKey: "firstLaunch") as? Date else { return }
         let secs = Int(Date().timeIntervalSince(first))
         defaults.set(secs, forKey: "firstValueSeconds")
-        log.add("Setup complete: first display in \(secs) s with \(defaults.integer(forKey: "clicks")) clicks")
+        log.add("Setup complete: first display in \(secs) s after \(defaults.integer(forKey: "clicks")) click(s) in Annex")
         objectWillChange.send()
     }
 
     var setupSummary: String? {
         guard let secs = defaults.object(forKey: "firstValueSeconds") as? Int else { return nil }
         let time = secs < 120 ? "\(secs) s" : "\(secs / 60) min"
-        return "Set up in \(time) · \(defaults.integer(forKey: "clicks")) clicks"
+        let clicks = defaults.integer(forKey: "clicks")
+        return "Set up in \(time) · \(clicks) click\(clicks == 1 ? "" : "s")"
     }
 
     func openScreenRecordingSettings() {

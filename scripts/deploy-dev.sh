@@ -1,9 +1,9 @@
 #!/bin/sh
 # Developer shortcut: build, install Annex on this Mac and on a second Mac over SSH, and launch both.
-# Usage: scripts/deploy-dev.sh [user@other-mac]   (default kvksatish@10.10.10.2, the cable address)
+# Usage: scripts/deploy-dev.sh user@other-mac
 set -e
 cd "$(dirname "$0")/.."
-OTHER=${1:-kvksatish@10.10.10.2}
+OTHER=${1:?usage: scripts/deploy-dev.sh user@other-mac}
 ./scripts/build.sh
 
 echo "→ $OTHER"

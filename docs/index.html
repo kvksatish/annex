@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annex — Use your other Mac as a second display</title>
+<meta name="description" content="Free, open-source app that turns your other Mac into a full-screen second display over a cable or Wi-Fi. One click, no account.">
+<meta property="og:title" content="Annex — Use your other Mac as a second display">
+<meta property="og:description" content="Plug in a cable, click once. Your spare MacBook becomes a real extended display. Free and open source.">
+<meta property="og:image" content="https://kvksatish.github.io/annex/assets/dashboard.png">
+<link rel="icon" href="assets/icon.png">
+<style>
+  :root {
+    --bg: #fbfbfd; --fg: #1d1d1f; --muted: #6e6e73; --card: #ffffff; --line: rgba(0,0,0,.08);
+    --accent: #3a6df0; --accent2: #8b4ef2; --ok: #1a9e55;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b0b0f; --fg: #f5f5f7; --muted: #a1a1a6; --card: #16161c; --line: rgba(255,255,255,.09); --ok: #3ccf7c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: var(--fg); }
+  .brand img { width: 30px; height: 30px; }
+  nav .links { display: flex; gap: 22px; font-size: 15px; }
+  nav .links a { color: var(--muted); }
+  nav .links a:hover { color: var(--fg); }
+
+  .hero { text-align: center; padding: 64px 0 28px; }
+  .hero img.icon { width: 112px; height: 112px; margin-bottom: 18px; }
+  h1 { font-size: clamp(38px, 6.4vw, 66px); line-height: 1.04; letter-spacing: -.025em; margin: 0 0 18px; font-weight: 750; }
+  h1 .grad { background: linear-gradient(100deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { font-size: clamp(18px, 2.3vw, 22px); color: var(--muted); max-width: 640px; margin: 0 auto 30px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; border-radius: 980px; font-weight: 600; font-size: 17px; }
+  .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 8px 24px -8px rgba(58,109,240,.55); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { color: var(--fg); border: 1px solid var(--line); background: var(--card); }
+  .fine { margin-top: 14px; color: var(--muted); font-size: 14px; }
+
+  .shot { margin: 48px auto 0; max-width: 640px; }
+  .shot img { width: 100%; height: auto; display: block; filter: drop-shadow(0 30px 60px rgba(0,0,0,.25)); }
+
+  section { padding: 72px 0 8px; }
+  h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; margin: 0 0 10px; text-align: center; }
+  .sub { text-align: center; color: var(--muted); margin: 0 auto 36px; max-width: 560px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .step, .feat, .faq details { background: var(--card); border: 1px solid var(--line); border-radius: 18px; }
+  .step { padding: 24px; }
+  .step .n { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
+             background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; margin-bottom: 14px; }
+  .step h3, .feat h3 { margin: 0 0 6px; font-size: 18px; }
+  .step p, .feat p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .tally { text-align: center; margin-top: 18px; color: var(--muted); font-size: 15px; }
+  .tally b { color: var(--ok); }
+
+  .feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feat { padding: 22px; }
+  .feat .ic { font-size: 26px; margin-bottom: 10px; }
+
+  .vs { max-width: 720px; margin: 0 auto; border-collapse: collapse; width: 100%; font-size: 15.5px; }
+  .vs th, .vs td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+  .vs th { color: var(--muted); font-weight: 600; font-size: 14px; }
+  .vs td.y { color: var(--ok); font-weight: 600; }
+
+  .faq { max-width: 720px; margin: 0 auto; display: grid; gap: 10px; }
+  .faq details { padding: 16px 20px; }
+  .faq summary { cursor: pointer; font-weight: 600; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; float: right; color: var(--muted); }
+  .faq details[open] summary::after { content: "–"; }
+  .faq p { color: var(--muted); margin: 10px 0 0; font-size: 15.5px; }
+
+  .final { text-align: center; padding: 80px 0 40px; }
+  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px;
+           display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--fg); }
+
+  @media (max-width: 760px) {
+    .steps, .feats { grid-template-columns: 1fr; }
+    nav .links a.hide-sm { display: none; }
+    .hero { padding-top: 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Annex</a>
+    <div class="links">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#faq">FAQ</a>
+      <a href="https://github.com/kvksatish/annex">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <img class="icon" src="assets/icon.png" alt="Annex app icon">
+    <h1>Your other Mac is<br><span class="grad">a second display.</span></h1>
+    <p class="lede">Plug in a cable, click once. That MacBook in your drawer becomes a real extended display. Full screen, no black bars, no account.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/kvksatish/annex/releases/latest/download/Annex.dmg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>
+        Download for Mac
+      </a>
+      <a class="btn ghost" href="https://github.com/kvksatish/annex">View source</a>
+    </div>
+    <p class="fine">Free &amp; open source · macOS 14 Sonoma or later · Apple silicon · <span id="ver">latest release</span></p>
+    <div class="shot"><img src="assets/dashboard.png" alt="Annex dashboard streaming to a MacBook Air over a cable at 53 fps"></div>
+  </header>
+
+  <section id="how">
+    <h2>Set up in about a minute.</h2>
+    <p class="sub">No wizard, no account, no pairing codes. Install it on both Macs and you're two clicks away.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Install on both Macs</h3><p>Open the download and drag Annex into Applications, on each Mac.</p></div>
+      <div class="step"><div class="n">2</div><h3>Click “Use as Display”</h3><p>Your other Mac shows up by itself, over a cable or the same Wi-Fi.</p></div>
+      <div class="step"><div class="n">3</div><h3>Click “Allow”</h3><p>On the other Mac, once. After that it reconnects on its own.</p></div>
+    </div>
+    <p class="tally">First setup measured at <b>102 seconds</b> on a MacBook Pro → MacBook Air. Every time after that: <b>0 clicks</b>.</p>
+  </section>
+
+  <section>
+    <h2>Built to feel like it came with your Mac.</h2>
+    <p class="sub">Everything you'd expect from a monitor, nothing you have to configure.</p>
+    <div class="feats">
+      <div class="feat"><div class="ic">🖥️</div><h3>Truly full screen</h3><p>Matches the other Mac's exact shape and uses the strip beside the notch. AirPlay letterboxes to 16:9.</p></div>
+      <div class="feat"><div class="ic">⚡️</div><h3>Cable or Wi-Fi</h3><p>Thunderbolt or USB-C for about 1 ms of lag, Wi-Fi when you're untethered. It switches when you plug in.</p></div>
+      <div class="feat"><div class="ic">🔁</div><h3>Reconnects itself</h3><p>Sleep, unplug, walk away. Your windows come home, and the display comes back when the Mac does.</p></div>
+      <div class="feat"><div class="ic">📈</div><h3>Live stats</h3><p>Frame rate, speed, latency and connection type, right in the window.</p></div>
+      <div class="feat"><div class="ic">🔍</div><h3>Text the size you like</h3><p>Larger Text, Default or More Space, and left or right of your Mac. One click each.</p></div>
+      <div class="feat"><div class="ic">🔒</div><h3>Private by design</h3><p>Mac to Mac over your own cable or network. No cloud, no account, no analytics.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why not just AirPlay?</h2>
+    <p class="sub">AirPlay to Mac is built for mirroring, not for using a Mac as a monitor.</p>
+    <table class="vs">
+      <tr><th></th><th>AirPlay to Mac</th><th>Annex</th></tr>
+      <tr><td>Fills a MacBook screen</td><td>16:9 only, black bars</td><td class="y">Exact fit, notch area too</td></tr>
+      <tr><td>Wired connection</td><td>No</td><td class="y">Thunderbolt / USB-C</td></tr>
+      <tr><td>Reconnects automatically</td><td>No</td><td class="y">Yes</td></tr>
+      <tr><td>Shows speed &amp; latency</td><td>No</td><td class="y">Yes</td></tr>
+      <tr><td>Price</td><td>Built in</td><td class="y">Free, open source</td></tr>
+    </table>
+  </section>
+
+  <section id="faq">
+    <h2>Questions</h2>
+    <p class="sub">Full details in the <a href="https://github.com/kvksatish/annex/blob/main/docs/USER_MANUAL.md">user manual</a>.</p>
+    <div class="faq">
+      <details><summary>macOS says “Annex can't be opened”.</summary>
+        <p>Annex isn't notarized by Apple yet. Open System Settings → Privacy &amp; Security, scroll down, and click <b>Open Anyway</b>. You only do this once per Mac.</p></details>
+      <details><summary>Which cable do I need?</summary>
+        <p>A Thunderbolt or USB4 cable, or a USB-C cable that carries data. Charge-only cables won't work. No cable? Keep both Macs on the same Wi-Fi.</p></details>
+      <details><summary>Why does it ask for Screen Recording?</summary>
+        <p>That's how macOS lets an app send what's on the extra display to your other Mac. Annex only captures the extra display it creates, and the picture goes straight to your other Mac.</p></details>
+      <details><summary>Can I type on the other Mac's keyboard?</summary>
+        <p>Not yet. Use your main Mac's keyboard and trackpad; the pointer moves onto the other screen like any monitor. Press Esc on the other Mac to get its screen back.</p></details>
+      <details><summary>Does it work with Intel Macs or older macOS?</summary>
+        <p>Right now it needs Apple silicon and macOS 14 or later on both Macs.</p></details>
+      <details><summary>Something went wrong. How do I report it?</summary>
+        <p>In Annex, open <b>Activity → Report a Problem…</b>. It opens a GitHub issue with your macOS version and recent log already filled in. You can review everything before you submit.</p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2>Give your spare Mac a second life.</h2>
+    <p class="sub">Free and open source under the MIT license.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/kvksatish/annex/releases/latest/download/Annex.dmg">Download Annex</a>
+      <a class="btn ghost" href="https://github.com/kvksatish/annex">Star on GitHub</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Annex · MIT License</span>
+    <span><a href="https://github.com/kvksatish/annex/releases">Releases</a> · <a href="https://github.com/kvksatish/annex/issues">Report an issue</a> · <a href="https://github.com/kvksatish/annex/blob/main/docs/USER_MANUAL.md">Manual</a></span>
+  </footer>
+</div>
+<script>
+  // Show the current version next to the download button.
+  fetch("https://api.github.com/repos/kvksatish/annex/releases/latest")
+    .then(r => r.ok ? r.json() : null)
+    .then(r => { if (r && r.tag_name) document.getElementById("ver").textContent = r.tag_name; })
+    .catch(() => {});
+</script>
+</body>
+</html>
