@@ -118,3 +118,11 @@ BOOL ANXIsLaptop(void) {
     CFRelease(info);
     return battery;
 }
+
+int ANXExternalPowerWatts(void) {
+    CFDictionaryRef d = IOPSCopyExternalPowerAdapterDetails();
+    if (!d) return 0;
+    NSNumber *w = ((__bridge NSDictionary *)d)[@kIOPSPowerAdapterWattsKey];
+    CFRelease(d);
+    return w.intValue;
+}

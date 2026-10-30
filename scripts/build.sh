@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")/.."
 SDK="$(xcrun --show-sdk-path)"
 APP=build/Annex.app
-VERSION=0.3.0
+VERSION=0.3.1
 rm -rf build/obj "$APP" && mkdir -p build/obj "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 for f in src/engine/*.m; do

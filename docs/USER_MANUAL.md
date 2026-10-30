@@ -32,12 +32,22 @@ That's it. The other Mac's screen now shows your extended desktop. Drag windows 
 - **Cable or Wi-Fi:** Annex picks the cable automatically when one is plugged in, and switches to it mid-session if you plug it in later. The green **Cable** or blue **Wi-Fi** badge shows which one it's using.
 - **Unplug or walk away:** the extra display disappears and your windows move back. When the other Mac comes back, Annex reconnects.
 
+## Battery and the cable
+
+A cable between two MacBooks carries **power** as well as the picture. If neither Mac is on a charger, one Mac quietly charges the other and its own battery drains.
+
+- **Simplest fix:** plug a charger into **either** Mac. Then both stay powered.
+- **On battery for a while?** Annex shows an orange warning. Click **Use Wi-Fi Instead**, then unplug the cable. The picture keeps going over Wi-Fi and the charging stops.
+
+macOS decides which Mac charges which; no app can switch that off.
+
 ## Settings
 
 | Setting | What it does |
 |---------|--------------|
 | **Size** | *Default* matches the other Mac's own screen. *Larger Text* makes everything bigger; *More Space* fits more. |
 | **Position** | Whether the display sits to the left or right of this Mac, so your mouse crosses over on the correct side. |
+| **Connection** | *Automatic* uses the cable when plugged in, Wi-Fi otherwise. *Wi-Fi only* never uses the cable for video. |
 | **Let my other Macs use this screen** | Turn off to stop this Mac from being used as a display. |
 | **Reconnect automatically** | Reconnects to the last Mac you used whenever it's nearby. |
 | **Open Annex at login** | Starts Annex quietly in the menu bar when you log in. |

@@ -100,7 +100,10 @@ private struct MacsCard: View {
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 10)
             } else {
-                ForEach(model.peers) { PeerRow(peer: $0) }
+                ForEach(model.peers) { peer in
+                    PeerRow(peer: peer)
+                    if let warning = model.batteryDrainWarning(for: peer) { PowerWarning(text: warning, peer: peer) }
+                }
             }
         }
     }
@@ -147,6 +150,37 @@ private struct PeerRow: View {
     }
 }
 
+private struct PowerWarning: View {
+    @EnvironmentObject var model: AppModel
+    var text: String
+    var peer: Peer
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "battery.25percent").foregroundStyle(.orange).font(.title3)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(text).font(.callout.weight(.medium)).fixedSize(horizontal: false, vertical: true)
+                if model.wifiOnly {
+                    Text("Video is going over Wi-Fi now. Unplug the cable to stop the charging, or plug a charger into either Mac.")
+                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("Plug a charger into either Mac, or send the video over Wi-Fi and unplug the cable.")
+                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    if peer.networkAddress != nil {
+                        Button("Use Wi-Fi Instead") { model.useWiFiInstead() }.controlSize(.small)
+                    } else {
+                        Text("Wi-Fi isn't available: \(peer.name) isn't on the same Wi-Fi network.")
+                            .font(.caption).foregroundStyle(.orange)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.12)))
+    }
+}
+
 private struct LiveCard: View {
     @EnvironmentObject var model: AppModel
 
@@ -184,6 +218,11 @@ private struct DisplayCard: View {
             Picker("Position", selection: $model.placeLeft) {
                 Text("Left of this Mac").tag(true)
                 Text("Right of this Mac").tag(false)
+            }
+            .pickerStyle(.segmented)
+            Picker("Connection", selection: $model.wifiOnly) {
+                Text("Automatic (cable first)").tag(false)
+                Text("Wi-Fi only").tag(true)
             }
             .pickerStyle(.segmented)
         }

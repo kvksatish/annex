@@ -35,10 +35,20 @@ final class AppModel: ObservableObject {
     @Published var receivingCable = false
     @Published var receiveFPS = 0.0
     @Published var needsScreenPermission = false
+    @Published var myPowerWatts = Int(ANXExternalPowerWatts())
 
     @Published var sizeChoice: SizeChoice { didSet { defaults.set(sizeChoice.rawValue, forKey: "size"); restartIfStreaming() } }
     @Published var placeLeft: Bool { didSet { defaults.set(placeLeft, forKey: "placeLeft"); restartIfStreaming() } }
     @Published var autoConnect: Bool { didSet { defaults.set(autoConnect, forKey: "autoConnect") } }
+    /// Send video over Wi-Fi even when a cable is plugged in (e.g. so the cable can be unplugged to stop
+    /// one Mac's battery charging the other).
+    @Published var wifiOnly: Bool {
+        didSet {
+            defaults.set(wifiOnly, forKey: "wifiOnly")
+            log.add(wifiOnly ? "Connection set to Wi-Fi only" : "Connection set to Automatic (cable preferred)")
+            restartIfStreaming()
+        }
+    }
     @Published var allowIncoming: Bool {
         didSet { defaults.set(allowIncoming, forKey: "allowIncoming"); receiver.enabled = allowIncoming; discovery.setAdvertising(allowIncoming) }
     }
@@ -60,6 +70,7 @@ final class AppModel: ObservableObject {
         if defaults.object(forKey: "size") == nil { sizeChoice = .standard }
         placeLeft = defaults.bool(forKey: "placeLeft")
         autoConnect = defaults.object(forKey: "autoConnect") as? Bool ?? true
+        wifiOnly = defaults.bool(forKey: "wifiOnly")
         allowIncoming = defaults.object(forKey: "allowIncoming") as? Bool ?? true
         if defaults.object(forKey: "firstLaunch") == nil { defaults.set(Date(), forKey: "firstLaunch") }
     }
@@ -116,14 +127,17 @@ final class AppModel: ObservableObject {
     private func connect() {
         guard let id = targetID, sender == nil else { return }
         guard CGPreflightScreenCaptureAccess() else {
-            needsScreenPermission = true
-            CGRequestScreenCaptureAccess()
-            log.add("Annex needs Screen Recording permission to send this screen")
+            // Ask macOS once per launch; auto-reconnect waits quietly until the user has granted it.
+            if !needsScreenPermission {
+                needsScreenPermission = true
+                CGRequestScreenCaptureAccess()
+                log.add("Annex needs Screen Recording permission to send this screen")
+            }
             targetID = nil; link = .idle
             return
         }
-        guard let peer = peers.first(where: { $0.id == id }), let address = peer.bestAddress else {
-            link = .retrying("Looking for the other Mac…")
+        guard let peer = peers.first(where: { $0.id == id }), let address = address(for: peer) else {
+            link = .retrying(wifiOnly ? "Waiting for the other Mac on Wi-Fi…" : "Looking for the other Mac…")
             scheduleRetry()
             return
         }
@@ -136,6 +150,10 @@ final class AppModel: ObservableObject {
         }
         sender = s
         s.start()
+    }
+
+    private func address(for peer: Peer) -> String? {
+        wifiOnly ? peer.networkAddress : peer.bestAddress
     }
 
     private func handle(_ state: ANXSenderState, detail: String, peer: Peer) {
@@ -173,12 +191,12 @@ final class AppModel: ObservableObject {
     private func peersChanged(_ new: [Peer]) {
         peers = new
         // Cable plugged in mid-stream: hop from Wi-Fi to the cable.
-        if link == .streaming, !stats.cable, let id = targetID, new.first(where: { $0.id == id })?.isCable == true {
+        if link == .streaming, !wifiOnly, !stats.cable, let id = targetID, new.first(where: { $0.id == id })?.isCable == true {
             log.add("Cable detected — switching to it")
             restartIfStreaming()
         }
         // Reconnect to the last Mac automatically.
-        if targetID == nil, autoConnect, !userStopped, let last = defaults.string(forKey: "lastTarget"),
+        if targetID == nil, autoConnect, !userStopped, !needsScreenPermission, let last = defaults.string(forKey: "lastTarget"),
            new.contains(where: { $0.id == last }) {
             targetID = last
             connect()
@@ -193,7 +211,26 @@ final class AppModel: ObservableObject {
             if speedHistory.count > 60 { speedHistory.removeFirst() }
         }
         receiveFPS = receiver.fps
+        let watts = Int(ANXExternalPowerWatts())
+        if watts != myPowerWatts { myPowerWatts = watts }
         if needsScreenPermission, CGPreflightScreenCaptureAccess() { needsScreenPermission = false }
+    }
+
+    // MARK: Power over the cable
+
+    /// A cable between two MacBooks also carries power. With no real charger on either Mac (a cable from
+    /// the other Mac shows up as ≤15 W), one battery is being drained to charge the other.
+    func batteryDrainWarning(for peer: Peer) -> String? {
+        guard peer.isCable, ANXIsLaptop(), peer.isLaptop,
+              myPowerWatts <= 15, peer.powerWatts <= 15 else { return nil }
+        return myPowerWatts > 0
+            ? "\(peer.name) is charging this Mac through the cable, so its battery is draining."
+            : "This Mac is charging \(peer.name) through the cable, so this battery is draining."
+    }
+
+    func useWiFiInstead() {
+        click()
+        wifiOnly = true
     }
 
     // MARK: Receiving

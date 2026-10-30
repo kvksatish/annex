@@ -47,6 +47,8 @@ BOOL ANXAddressIsCable(NSString *ipv4);
 NSArray<NSString *> *ANXCableAddresses(void);
 /// YES on MacBooks (has an internal battery).
 BOOL ANXIsLaptop(void);
+/// Watts of external power coming in (a charger, or another Mac over the cable); 0 when on battery.
+int ANXExternalPowerWatts(void);
 BOOL ANXWriteAll(int fd, const void *buf, size_t n);
 BOOL ANXReadAll(int fd, void *buf, size_t n);
 BOOL ANXSendMessage(int fd, ANXMessage type, const void *_Nullable payload, uint32_t len);
