@@ -38,7 +38,8 @@ final class AppModel: ObservableObject {
     @Published var myPowerWatts = Int(ANXExternalPowerWatts())
 
     @Published var sizeChoice: SizeChoice { didSet { defaults.set(sizeChoice.rawValue, forKey: "size"); restartIfStreaming() } }
-    @Published var placeLeft: Bool { didSet { defaults.set(placeLeft, forKey: "placeLeft"); restartIfStreaming() } }
+    /// Offset of the extended display's top-left corner from this Mac's screen, in points; nil = right side.
+    @Published private(set) var placement: CGPoint?
     @Published var autoConnect: Bool { didSet { defaults.set(autoConnect, forKey: "autoConnect") } }
     /// Send video over Wi-Fi even when a cable is plugged in (e.g. so the cable can be unplugged to stop
     /// one Mac's battery charging the other).
@@ -68,7 +69,7 @@ final class AppModel: ObservableObject {
         discovery = Discovery(myID: myID)
         sizeChoice = SizeChoice(rawValue: defaults.integer(forKey: "size")) ?? .standard
         if defaults.object(forKey: "size") == nil { sizeChoice = .standard }
-        placeLeft = defaults.bool(forKey: "placeLeft")
+        if let p = defaults.array(forKey: "placement") as? [Double], p.count == 2 { placement = CGPoint(x: p[0], y: p[1]) }
         autoConnect = defaults.object(forKey: "autoConnect") as? Bool ?? true
         wifiOnly = defaults.bool(forKey: "wifiOnly")
         allowIncoming = defaults.object(forKey: "allowIncoming") as? Bool ?? true
@@ -143,7 +144,7 @@ final class AppModel: ObservableObject {
         }
         let s = ANXSender(address: address, senderID: UUID(uuidString: myID)!, senderName: myName)
         s.sizeScale = sizeChoice.scale
-        s.placeLeft = placeLeft
+        if let p = placement { s.offsetX = p.x; s.offsetY = p.y; s.hasPlacement = true }
         s.onStateChange = { [weak self, weak s] state, detail in
             guard let self, let s, s === self.sender else { return }
             self.handle(state, detail: detail, peer: peer)
@@ -162,6 +163,7 @@ final class AppModel: ObservableObject {
         case .awaitingApproval: link = .awaitingApproval
         case .streaming:
             link = .streaming
+            if let s = sender { defaults.set([Double(s.displayWidth), Double(s.displayHeight)], forKey: "lastDisplaySize") }
             recordFirstValue()
         case .declined:
             sender = nil; targetID = nil
@@ -214,6 +216,43 @@ final class AppModel: ObservableObject {
         let watts = Int(ANXExternalPowerWatts())
         if watts != myPowerWatts { myPowerWatts = watts }
         if needsScreenPermission, CGPreflightScreenCaptureAccess() { needsScreenPermission = false }
+    }
+
+    // MARK: Arrangement
+
+    var mainDisplaySize: CGSize { CGDisplayBounds(CGMainDisplayID()).size }
+
+    /// Size of the extended display in points: live while streaming, otherwise the last one used.
+    var extendedDisplaySize: CGSize {
+        if link == .streaming, stats.width > 0 { return CGSize(width: stats.width, height: stats.height) }
+        if let s = defaults.array(forKey: "lastDisplaySize") as? [Double], s.count == 2 {
+            return CGSize(width: s[0], height: s[1])
+        }
+        return CGSize(width: 1470 * sizeChoice.scale, height: 956 * sizeChoice.scale)
+    }
+
+    var effectivePlacement: CGPoint { placement ?? CGPoint(x: mainDisplaySize.width, y: 0) }
+
+    func setPlacement(_ p: CGPoint) {
+        placement = p
+        defaults.set([Double(p.x), Double(p.y)], forKey: "placement")
+        if let s = sender {
+            s.offsetX = p.x; s.offsetY = p.y; s.hasPlacement = true
+            s.applyPlacement()
+        }
+    }
+
+    /// Snaps a dragged position so the extended display touches the nearest edge of this Mac's screen
+    /// (macOS requires displays to share an edge), keeping at least `overlap` points of shared edge.
+    static func snap(_ p: CGPoint, main: CGSize, extended e: CGSize, overlap: CGFloat = 60) -> CGPoint {
+        func clamp(_ v: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat { min(max(v, lo), hi) }
+        let candidates = [
+            CGPoint(x: -e.width, y: clamp(p.y, overlap - e.height, main.height - overlap)),   // left
+            CGPoint(x: main.width, y: clamp(p.y, overlap - e.height, main.height - overlap)),  // right
+            CGPoint(x: clamp(p.x, overlap - e.width, main.width - overlap), y: -e.height),     // above
+            CGPoint(x: clamp(p.x, overlap - e.width, main.width - overlap), y: main.height),   // below
+        ]
+        return candidates.min { hypot($0.x - p.x, $0.y - p.y) < hypot($1.x - p.x, $1.y - p.y) }!
     }
 
     // MARK: Power over the cable

@@ -215,11 +215,12 @@ private struct DisplayCard: View {
                 ForEach(SizeChoice.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
-            Picker("Position", selection: $model.placeLeft) {
-                Text("Left of this Mac").tag(true)
-                Text("Right of this Mac").tag(false)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Arrangement")
+                ArrangementView().frame(height: 210)
+                Text("Drag the display to match where your other Mac sits on your desk.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
-            .pickerStyle(.segmented)
             Picker("Connection", selection: $model.wifiOnly) {
                 Text("Automatic (cable first)").tag(false)
                 Text("Wi-Fi only").tag(true)

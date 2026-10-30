@@ -42,5 +42,14 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSBonjourServices</key><array><string>_annex._tcp</string></array>
 </dict></plist>
 PLIST
-codesign --force --sign - "$APP"
+# Sign with a stable identity so macOS keeps Screen Recording / Local Network permission across
+# builds and updates (an ad-hoc signature changes every build, and macOS then forgets the grant).
+KC="$HOME/Library/Keychains/annex-signing.keychain-db"
+if [ -f "$KC" ] && codesign --force --keychain "$KC" --sign "Annex Developer" "$APP" 2>/dev/null; then
+  echo "signed with Annex Developer"
+else
+  echo "warning: signing identity unavailable (locked keychain? run: security unlock-keychain $KC)"
+  echo "         falling back to ad-hoc; macOS will ask for permissions again after installing this build"
+  codesign --force --sign - "$APP"
+fi
 echo "built $APP ($VERSION)"

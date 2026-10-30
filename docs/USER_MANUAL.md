@@ -46,7 +46,7 @@ macOS decides which Mac charges which; no app can switch that off.
 | Setting | What it does |
 |---------|--------------|
 | **Size** | *Default* matches the other Mac's own screen. *Larger Text* makes everything bigger; *More Space* fits more. |
-| **Position** | Whether the display sits to the left or right of this Mac, so your mouse crosses over on the correct side. |
+| **Arrangement** | Drag the display around your Mac's screen, to any side and anywhere along it, so your mouse crosses over where the other Mac physically sits. It moves instantly, even while in use. |
 | **Connection** | *Automatic* uses the cable when plugged in, Wi-Fi otherwise. *Wi-Fi only* never uses the cable for video. |
 | **Let my other Macs use this screen** | Turn off to stop this Mac from being used as a display. |
 | **Reconnect automatically** | Reconnects to the last Mac you used whenever it's nearby. |

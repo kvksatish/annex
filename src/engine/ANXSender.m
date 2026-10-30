@@ -166,13 +166,18 @@ static void encoded(void *ref, void *src, OSStatus st, VTEncodeInfoFlags flags, 
 }
 
 - (void)placeDisplay {
+    if (!_display) return;
     CGDirectDisplayID vid = _display.displayID;
-    CGRect main = CGDisplayBounds(CGMainDisplayID()), v = CGDisplayBounds(vid);
-    int32_t x = _placeLeft ? (int32_t)(main.origin.x - v.size.width) : (int32_t)(main.origin.x + main.size.width);
+    CGRect main = CGDisplayBounds(CGMainDisplayID());
+    double dx = _hasPlacement ? _offsetX : main.size.width, dy = _hasPlacement ? _offsetY : 0;   // default: right, top-aligned
     CGDisplayConfigRef cfg;
     if (CGBeginDisplayConfiguration(&cfg) != kCGErrorSuccess) return;
-    CGConfigureDisplayOrigin(cfg, vid, x, (int32_t)main.origin.y);
+    CGConfigureDisplayOrigin(cfg, vid, (int32_t)lround(main.origin.x + dx), (int32_t)lround(main.origin.y + dy));
     CGCompleteDisplayConfiguration(cfg, kCGConfigureForSession);
+}
+
+- (void)applyPlacement {
+    [self placeDisplay];
 }
 
 - (void)startCapture:(int)retries {

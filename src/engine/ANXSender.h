@@ -19,7 +19,10 @@ typedef NS_ENUM(NSInteger, ANXSenderState) {
 @property int pointsWide;
 /// Scale applied to the receiver's size when pointsWide is 0 (1.0 = match exactly).
 @property double sizeScale;
-@property BOOL placeLeft;
+/// Where the new display sits, as the offset of its top-left corner from the main display's
+/// top-left corner, in points (macOS global coordinates, y grows downward). Ignored until hasPlacement.
+@property double offsetX, offsetY;
+@property BOOL hasPlacement;
 
 /// Called on the main queue.
 @property(copy, nullable) void (^onStateChange)(ANXSenderState state, NSString *detail);
@@ -31,6 +34,8 @@ typedef NS_ENUM(NSInteger, ANXSenderState) {
 
 - (void)start;
 - (void)stop;
+/// Re-applies offsetX/offsetY to the live display (for dragging it around without reconnecting).
+- (void)applyPlacement;
 @end
 
 NS_ASSUME_NONNULL_END
