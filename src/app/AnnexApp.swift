@@ -25,6 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppModel.shared.start()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        AppModel.shared.log.add("Annex quit")
+    }
+
     // Closing the dashboard keeps Annex running in the menu bar.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 }

@@ -112,7 +112,7 @@ final class AppModel: ObservableObject {
         targetID = peer.id
         defaults.set(peer.id, forKey: "lastTarget")
         log.add("Extending to \(peer.name)")
-        connect()
+        connect(userInitiated: true)
     }
 
     func stopExtending() {
@@ -125,11 +125,11 @@ final class AppModel: ObservableObject {
         log.add("Stopped extending")
     }
 
-    private func connect() {
+    private func connect(userInitiated: Bool = false) {
         guard let id = targetID, sender == nil else { return }
         guard CGPreflightScreenCaptureAccess() else {
-            // Ask macOS once per launch; auto-reconnect waits quietly until the user has granted it.
-            if !needsScreenPermission {
+            // Only a click on "Use as Display" may trigger the macOS prompt; automatic reconnects wait quietly.
+            if userInitiated {
                 needsScreenPermission = true
                 CGRequestScreenCaptureAccess()
                 log.add("Annex needs Screen Recording permission to send this screen")
@@ -198,7 +198,10 @@ final class AppModel: ObservableObject {
             restartIfStreaming()
         }
         // Reconnect to the last Mac automatically.
-        if targetID == nil, autoConnect, !userStopped, !needsScreenPermission, let last = defaults.string(forKey: "lastTarget"),
+        // Never while this Mac is itself being used as a display (that would extend back into the sender),
+        // and never without Screen Recording already granted.
+        if targetID == nil, autoConnect, !userStopped, !needsScreenPermission, receivingFrom == nil,
+           CGPreflightScreenCaptureAccess(), let last = defaults.string(forKey: "lastTarget"),
            new.contains(where: { $0.id == last }) {
             targetID = last
             connect()
