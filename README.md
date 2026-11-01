@@ -1,5 +1,7 @@
 # Annex
 
+🌐 **Website: [annex-mac.vercel.app](https://annex-mac.vercel.app/)**
+
 **Use your other Mac as a second display.** Plug in a cable (or just share Wi-Fi), click once, done.
 
 Annex is for the MacBook sitting in your drawer. Your main Mac gets a real extended display that fills the other Mac's whole screen, notch area included, at its native shape. AirPlay letterboxes it to 16:9.
