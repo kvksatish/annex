@@ -11,7 +11,7 @@ Annex is for the MacBook sitting in your drawer. Your main Mac gets a real exten
 - **Live stats:** frame rate, speed, latency, connection type.
 - **Private.** Mac to Mac, nothing leaves your desk. No account.
 
-**[⬇ Download Annex](https://github.com/kvksatish/annex/releases/latest/download/Annex.dmg)** · [Website](https://kvksatish.github.io/annex/) · [User manual](docs/USER_MANUAL.md)
+**[⬇ Download Annex](https://github.com/kvksatish/annex/releases/latest/download/Annex.dmg)** · [Website](https://annex-mac.vercel.app/) · [User manual](docs/USER_MANUAL.md)
 
 ![Annex dashboard](docs/assets/dashboard.png)
 
@@ -37,7 +37,7 @@ virtual display → ScreenCaptureKit → H.264 (hardware) ──TCP──▶ har
 gh release create vX.Y.Z build/Annex.dmg --title "Annex X.Y.Z" --notes "…"
 ```
 
-The website's download button always points at the newest release's `Annex.dmg`. The site itself is `docs/index.html`, served by GitHub Pages.
+The website's download button always points at the newest release's `Annex.dmg`.
 
 ## Build from source
 
