@@ -12,9 +12,13 @@ for f in src/engine/*.m; do
     "$f" -o "build/obj/$(basename "$f" .m).o"
 done
 
+# The look: src/app/Theme by default; set ANNEX_THEME_DIR to build with another theme folder
+# (its *.swift replace Theme.swift; an optional Fonts/ folder is bundled).
+THEME_DIR="${ANNEX_THEME_DIR:-src/app/Theme}"
+echo "theme: $THEME_DIR"
 xcrun swiftc -O -parse-as-library -sdk "$SDK" -target arm64-apple-macos14.0 \
   -import-objc-header src/engine/Annex-Bridging-Header.h \
-  src/app/*.swift build/obj/*.o -o "$APP/Contents/MacOS/Annex" \
+  src/app/*.swift "$THEME_DIR"/*.swift build/obj/*.o -o "$APP/Contents/MacOS/Annex" \
   -framework ScreenCaptureKit -framework VideoToolbox -framework AVFoundation -framework CoreMedia \
   -framework IOKit -framework ServiceManagement
 
@@ -22,6 +26,7 @@ if [ ! -f assets/AppIcon.icns ]; then
   xcrun swiftc -sdk "$SDK" scripts/make-icon.swift -o build/make-icon && build/make-icon build/AppIcon.iconset && iconutil -c icns build/AppIcon.iconset -o assets/AppIcon.icns
 fi
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+if [ -d "$THEME_DIR/Fonts" ]; then cp -R "$THEME_DIR/Fonts" "$APP/Contents/Resources/Fonts"; fi
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -36,6 +41,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$VERSION</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
+  <key>ATSApplicationFontsPath</key><string>Fonts</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSScreenCaptureUsageDescription</key><string>Annex sends your extra display to your other Mac.</string>
   <key>NSLocalNetworkUsageDescription</key><string>Annex finds and connects to your other Mac over a cable or Wi-Fi.</string>

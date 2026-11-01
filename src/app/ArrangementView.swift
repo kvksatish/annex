@@ -27,7 +27,7 @@ struct ArrangementView: View {
 
                 if let snapped {
                     RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                        .strokeBorder(Theme.ink, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
                         .frame(width: ext.width * scale, height: ext.height * scale)
                         .offset(x: origin.x + snapped.x * scale, y: origin.y + snapped.y * scale)
                 }
@@ -63,15 +63,13 @@ struct ArrangementView: View {
         let w = size.width * scale, h = size.height * scale
         return ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(isMain
-                      ? LinearGradient(colors: [Color(white: 0.42), Color(white: 0.30)], startPoint: .top, endPoint: .bottom)
-                      : LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(isMain ? Theme.mainScreenFill : Theme.extendedScreenFill)
             if isMain {
                 Rectangle().fill(Color.white.opacity(0.85)).frame(height: max(2, h * 0.05))   // menu bar
                     .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
             }
             Text(title)
-                .font(.system(size: 10, weight: .semibold))
+                .font(Theme.font(.caption))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)

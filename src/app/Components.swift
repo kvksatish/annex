@@ -1,34 +1,33 @@
 import SwiftUI
 
+/// Text roles every theme maps to a font.
+enum FontRole { case appTitle, cardTitle, eyebrow, body, label, caption, metric, unit, mono }
+
 struct Card<Content: View>: View {
     var title: String?
     @ViewBuilder var content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if let title {
-                Text(title.uppercased())
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
+            if let title { Eyebrow(text: title) }
             content
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color(nsColor: .controlBackgroundColor)))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.07)))
+        .themeCard()
+    }
+}
+
+struct Eyebrow: View {
+    var text: String
+    var body: some View {
+        Text(text.uppercased()).font(Theme.font(.eyebrow)).tracking(0.6).foregroundStyle(Theme.inkMuted)
     }
 }
 
 struct LinkBadge: View {
     var cable: Bool
-
     var body: some View {
-        Label(cable ? "Cable" : "Wi-Fi", systemImage: cable ? "cable.connector" : "wifi")
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 7).padding(.vertical, 2)
-            .background(Capsule().fill((cable ? Color.green : Color.blue).opacity(0.15)))
-            .foregroundStyle(cable ? Color.green : Color.blue)
+        ThemeBadge(text: cable ? "Cable" : "Wi-Fi", icon: cable ? "cable.connector" : "wifi",
+                   tone: cable ? Theme.success : Theme.wifi)
     }
 }
 
@@ -40,10 +39,10 @@ struct StatTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text(value).font(.system(.title2, design: .rounded).weight(.semibold)).monospacedDigit()
-                Text(unit).font(.caption).foregroundStyle(.secondary)
+                Text(value).font(Theme.font(.metric)).foregroundStyle(Theme.ink)
+                Text(unit).font(Theme.font(.unit)).foregroundStyle(Theme.inkMuted)
             }
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(label).font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -66,9 +65,9 @@ struct Sparkline: View {
                     points.forEach { p.addLine(to: $0) }
                     p.addLine(to: CGPoint(x: points.last!.x, y: geo.size.height))
                 }
-                .fill(LinearGradient(colors: [.accentColor.opacity(0.25), .clear], startPoint: .top, endPoint: .bottom))
+                .fill(LinearGradient(colors: [Theme.chartStory.opacity(0.32), .clear], startPoint: .top, endPoint: .bottom))
                 Path { p in p.addLines(points) }
-                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                    .stroke(Theme.chartStory, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
             }
         }
     }

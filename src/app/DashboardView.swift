@@ -20,17 +20,15 @@ struct DashboardView: View {
         }
         .frame(width: 540)
         .frame(minHeight: 420, idealHeight: 720)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(ThemeBackground().ignoresSafeArea())
     }
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "rectangle.on.rectangle")
-                .font(.system(size: 30, weight: .medium))
-                .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+            HeaderMark()
             VStack(alignment: .leading, spacing: 1) {
-                Text("Annex").font(.title2.weight(.bold))
-                Text("Use your other Mac as a second display").foregroundStyle(.secondary)
+                Text("Annex").font(Theme.font(.appTitle)).foregroundStyle(Theme.ink)
+                Text("Use your other Mac as a second display").font(Theme.font(.body)).foregroundStyle(Theme.inkMuted)
             }
             Spacer()
         }
@@ -42,10 +40,10 @@ struct DashboardView: View {
             if let s = model.setupSummary { Text(s) }
             Spacer()
             Link("Open source on GitHub", destination: URL(string: "https://github.com/kvksatish/annex")!)
-            Text("v\(model.version)")
+            Text("v\(model.version)").font(Theme.number(12))
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .font(Theme.font(.caption))
+        .foregroundStyle(Theme.inkMuted)
         .padding(.horizontal, 4)
     }
 }
@@ -55,12 +53,13 @@ private struct PermissionCard: View {
 
     var body: some View {
         Card {
-            Label("One more step", systemImage: "hand.raised.fill").font(.headline).foregroundStyle(.orange)
+            Label("One more step", systemImage: "hand.raised.fill").font(Theme.font(.cardTitle)).foregroundStyle(Theme.signal)
             Text("To send your screen, macOS needs you to turn on **Annex** under Screen & System Audio Recording. Then relaunch Annex.")
+                .font(Theme.font(.body)).foregroundStyle(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
-                Button("Open Settings") { model.openScreenRecordingSettings() }.buttonStyle(.borderedProminent)
-                Button("Relaunch Annex") { model.relaunch() }
+                Button("Open Settings") { model.openScreenRecordingSettings() }.themePrimaryButton()
+                Button("Relaunch Annex") { model.relaunch() }.themeSecondaryButton()
             }
         }
     }
@@ -73,10 +72,10 @@ private struct ReceivingCard: View {
     var body: some View {
         Card {
             HStack {
-                Image(systemName: "rectangle.inset.filled").font(.title2).foregroundStyle(.green)
+                Image(systemName: "rectangle.inset.filled").font(.title2).foregroundStyle(Theme.success)
                 VStack(alignment: .leading) {
-                    Text("This screen is showing \(name)").font(.headline)
-                    Text("Press Esc on this Mac to get your screen back.").foregroundStyle(.secondary)
+                    Text("This screen is showing \(name)").font(Theme.font(.cardTitle)).foregroundStyle(Theme.ink)
+                    Text("Press Esc on this Mac to get your screen back.").font(Theme.font(.body)).foregroundStyle(Theme.inkMuted)
                 }
                 Spacer()
                 LinkBadge(cable: model.receivingCable)
@@ -93,9 +92,9 @@ private struct MacsCard: View {
             if model.peers.isEmpty {
                 VStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Looking for your other Mac…").font(.headline)
+                    Text("Looking for your other Mac…").font(Theme.font(.cardTitle)).foregroundStyle(Theme.ink)
                     Text("Open Annex on it too. For the sharpest, smoothest picture connect the two Macs with a Thunderbolt or USB-C cable — or just keep them on the same Wi-Fi.")
-                        .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .font(Theme.font(.label)).foregroundStyle(Theme.inkMuted).multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 10)
@@ -132,20 +131,21 @@ private struct PeerRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: peer.icon).font(.system(size: 26)).frame(width: 40).foregroundStyle(.secondary)
+            Image(systemName: peer.icon).font(.system(size: 26)).frame(width: 40).foregroundStyle(Theme.inkMuted)
             VStack(alignment: .leading, spacing: 4) {
-                Text(peer.name).font(.headline)
+                Text(peer.name).font(Theme.font(.cardTitle)).foregroundStyle(Theme.ink)
                 HStack(spacing: 6) {
                     LinkBadge(cable: peer.isCable)
-                    if let status { Text(status).font(.caption).foregroundStyle(.secondary) }
+                    if let status { Text(status).font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted) }
                 }
             }
             Spacer()
             if isTarget, model.link != .streaming, model.link != .idle { ProgressView().controlSize(.small) }
-            Button(isTarget ? "Stop" : "Use as Display") { model.toggle(peer) }
-                .buttonStyle(.borderedProminent)
-                .tint(isTarget ? .red : .accentColor)
-                .controlSize(.large)
+            if isTarget {
+                Button("Stop") { model.toggle(peer) }.themeSecondaryButton()
+            } else {
+                Button("Use as Display") { model.toggle(peer) }.themePrimaryButton()
+            }
         }
     }
 }
@@ -157,27 +157,26 @@ private struct PowerWarning: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "battery.25percent").foregroundStyle(.orange).font(.title3)
+            Image(systemName: "battery.25percent").foregroundStyle(Theme.signal).font(.title3)
             VStack(alignment: .leading, spacing: 6) {
-                Text(text).font(.callout.weight(.medium)).fixedSize(horizontal: false, vertical: true)
+                Text(text).font(Theme.font(.label)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 if model.wifiOnly {
                     Text("Video is going over Wi-Fi now. Unplug the cable to stop the charging, or plug a charger into either Mac.")
-                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        .font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted).fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text("Plug a charger into either Mac, or send the video over Wi-Fi and unplug the cable.")
-                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        .font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted).fixedSize(horizontal: false, vertical: true)
                     if peer.networkAddress != nil {
-                        Button("Use Wi-Fi Instead") { model.useWiFiInstead() }.controlSize(.small)
+                        Button("Use Wi-Fi Instead") { model.useWiFiInstead() }.themeSmallButton()
                     } else {
                         Text("Wi-Fi isn't available: \(peer.name) isn't on the same Wi-Fi network.")
-                            .font(.caption).foregroundStyle(.orange)
+                            .font(Theme.font(.caption)).foregroundStyle(Theme.signal)
                     }
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.12)))
+        .themeNotice()
     }
 }
 
@@ -195,13 +194,20 @@ private struct LiveCard: View {
             HStack {
                 StatTile(value: "\(Int(model.stats.fps))", unit: "fps", label: "Smoothness")
                 StatTile(value: String(format: "%.1f", model.stats.mbps), unit: "Mbps", label: "Speed")
-                StatTile(value: latency,
-                         unit: "ms", label: "Latency")
-                StatTile(value: model.stats.cable ? "Cable" : "Wi-Fi", unit: "", label: "Connection")
+                StatTile(value: latency, unit: "ms", label: "Latency")
+                VStack(alignment: .leading, spacing: 6) {
+                    LinkBadge(cable: model.stats.cable)
+                    Text("Connection").font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             Sparkline(values: model.speedHistory).frame(height: 40)
-            Text(verbatim: "\(model.stats.width) × \(model.stats.height) on \(model.targetPeer?.name ?? "the other Mac") · frames only send when something changes")
-                .font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Text(verbatim: "\(model.stats.width) × \(model.stats.height)").font(Theme.number(12))
+                Text("on \(model.targetPeer?.name ?? "the other Mac") · frames only send when something changes")
+                    .font(Theme.font(.caption))
+            }
+            .foregroundStyle(Theme.inkMuted)
         }
     }
 }
@@ -211,21 +217,29 @@ private struct DisplayCard: View {
 
     var body: some View {
         Card(title: "Display") {
-            Picker("Size", selection: $model.sizeChoice) {
-                ForEach(SizeChoice.allCases) { Text($0.title).tag($0) }
+            Row(label: "Size") {
+                ThemeSegmented(options: SizeChoice.allCases.map { ($0, $0.title) }, selection: $model.sizeChoice)
             }
-            .pickerStyle(.segmented)
             VStack(alignment: .leading, spacing: 6) {
-                Text("Arrangement")
+                Text("Arrangement").font(Theme.font(.label)).foregroundStyle(Theme.ink)
                 ArrangementView().frame(height: 210)
                 Text("Drag the display to match where your other Mac sits on your desk.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(Theme.font(.caption)).foregroundStyle(Theme.inkMuted)
             }
-            Picker("Connection", selection: $model.wifiOnly) {
-                Text("Automatic (cable first)").tag(false)
-                Text("Wi-Fi only").tag(true)
+            Row(label: "Connection") {
+                ThemeSegmented(options: [(false, "Automatic (cable first)"), (true, "Wi-Fi only")], selection: $model.wifiOnly)
             }
-            .pickerStyle(.segmented)
+        }
+    }
+
+    private struct Row<Control: View>: View {
+        var label: String
+        @ViewBuilder var control: Control
+        var body: some View {
+            HStack(spacing: 12) {
+                Text(label).font(Theme.font(.label)).foregroundStyle(Theme.ink).frame(width: 80, alignment: .leading)
+                control
+            }
         }
     }
 }
@@ -235,11 +249,15 @@ private struct ThisMacCard: View {
 
     var body: some View {
         Card(title: "This Mac") {
-            Toggle("Let my other Macs use this screen", isOn: $model.allowIncoming)
-            Toggle("Reconnect automatically", isOn: $model.autoConnect)
-            Toggle("Open Annex at login", isOn: Binding(get: { model.openAtLogin }, set: { model.openAtLogin = $0 }))
+            Group {
+                Toggle("Let my other Macs use this screen", isOn: $model.allowIncoming)
+                Toggle("Reconnect automatically", isOn: $model.autoConnect)
+                Toggle("Open Annex at login", isOn: Binding(get: { model.openAtLogin }, set: { model.openAtLogin = $0 }))
+            }
+            .font(Theme.font(.body))
+            .foregroundStyle(Theme.ink)
+            .themeToggle()
         }
-        .toggleStyle(.switch)
     }
 }
 
@@ -256,8 +274,8 @@ private struct ActivityCard: View {
                         LazyVStack(alignment: .leading, spacing: 3) {
                             ForEach(log.lines) { line in
                                 Text("\(LogStore.time(line.time))  \(line.text)")
-                                    .font(.system(.caption, design: .monospaced))
-                                    .foregroundStyle(line.isProblem ? Color.red : Color.secondary)
+                                    .font(Theme.font(.mono))
+                                    .foregroundStyle(line.isProblem ? Theme.danger : Theme.inkMuted)
                                     .textSelection(.enabled)
                                     .id(line.id)
                             }
@@ -272,20 +290,18 @@ private struct ActivityCard: View {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(log.text(), forType: .string)
                     }
-                    Button("Show Log File") { NSWorkspace.shared.activateFileViewerSelecting([log.fileURL]) }
+                    .themeSmallButton()
+                    Button("Show Log File") { NSWorkspace.shared.activateFileViewerSelecting([log.fileURL]) }.themeSmallButton()
                     Spacer()
-                    Button("Report a Problem…") { model.reportProblem() }
+                    Button("Report a Problem…") { model.reportProblem() }.themeSmallButton()
                 }
                 .padding(.top, 6)
             } label: {
                 HStack {
-                    Text("ACTIVITY").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    Eyebrow(text: "Activity")
                     if log.problemCount > 0 {
-                        Text("\(log.problemCount) issue\(log.problemCount == 1 ? "" : "s")")
-                            .font(.caption2.weight(.semibold))
-                            .padding(.horizontal, 6).padding(.vertical, 1)
-                            .background(Capsule().fill(Color.red.opacity(0.15)))
-                            .foregroundStyle(.red)
+                        ThemeBadge(text: "\(log.problemCount) issue\(log.problemCount == 1 ? "" : "s")",
+                                   icon: "exclamationmark.circle", tone: Theme.danger)
                     }
                 }
             }

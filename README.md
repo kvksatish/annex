@@ -41,6 +41,12 @@ gh release create vX.Y.Z build/Annex.dmg --title "Annex X.Y.Z" --notes "…"
 
 The website's download button always points at the newest release's `Annex.dmg`.
 
+## Open core
+
+The app and engine here are MIT open source. **Official downloads** use the Haze design (fonts, colours and glass from a private design system); they're built from this exact source plus a private theme folder.
+
+Building from source gives the standard look (`src/app/Theme/Theme.swift`). Every colour, font and surface goes through that one file, so you can make your own theme: copy it, change it, and build with `ANNEX_THEME_DIR=path/to/your/theme ./scripts/build.sh`. An optional `Fonts/` folder next to it gets bundled.
+
 ## Build from source
 
 Requires Xcode Command Line Tools (`xcode-select --install`). No Xcode project needed.
