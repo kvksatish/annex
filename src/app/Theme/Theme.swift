@@ -4,7 +4,8 @@ import SwiftUI
 //
 // Every colour, font and surface in the app goes through this file, so a build can swap in another look
 // by pointing scripts/build.sh at a different theme folder (ANNEX_THEME_DIR). A replacement theme must
-// define the same names: Theme, ThemeBackground, ThemeSegmented, HeaderMark and the View extensions below.
+// define the same names: Theme, ThemeBackground, ThemeGroundShapes, ThemeSegmented, ThemeBadge, HeaderMark
+// and the View extensions below.
 
 enum Theme {
     static let name = "Standard"
@@ -45,6 +46,11 @@ enum Theme {
 
 struct ThemeBackground: View {
     var body: some View { Color(nsColor: .windowBackgroundColor) }
+}
+
+/// Decoration that scrolls behind the content (none in the standard look).
+struct ThemeGroundShapes: View {
+    var body: some View { Color.clear }
 }
 
 struct HeaderMark: View {

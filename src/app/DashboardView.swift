@@ -17,6 +17,7 @@ struct DashboardView: View {
                 footer
             }
             .padding(20)
+            .background(ThemeGroundShapes())
         }
         .frame(width: 540)
         .frame(minHeight: 420, idealHeight: 720)
