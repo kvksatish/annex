@@ -202,7 +202,7 @@ private struct LiveCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Sparkline(values: model.speedHistory).frame(height: 40)
+            ThemeTrendChart(values: model.speedHistory, unit: "Mbps")
             HStack(spacing: 4) {
                 Text(verbatim: "\(model.stats.width) × \(model.stats.height)").font(Theme.number(12))
                 Text("on \(model.targetPeer?.name ?? "the other Mac") · frames only send when something changes")

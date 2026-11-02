@@ -4,7 +4,7 @@ import SwiftUI
 //
 // Every colour, font and surface in the app goes through this file, so a build can swap in another look
 // by pointing scripts/build.sh at a different theme folder (ANNEX_THEME_DIR). A replacement theme must
-// define the same names: Theme, ThemeBackground, ThemeGroundShapes, ThemeSegmented, ThemeBadge, HeaderMark
+// define the same names: Theme, ThemeBackground, ThemeGroundShapes, ThemeTrendChart, ThemeSegmented, ThemeBadge, HeaderMark
 // and the View extensions below.
 
 enum Theme {
@@ -61,6 +61,14 @@ struct HeaderMark: View {
             .font(.system(size: 30, weight: .medium))
             .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
     }
+}
+
+/// One measure over time (the live speed history), newest value last.
+struct ThemeTrendChart: View {
+    var values: [Double]
+    var unit: String
+
+    var body: some View { Sparkline(values: values).frame(height: 40) }
 }
 
 /// A one-of-several choice (segmented control).
