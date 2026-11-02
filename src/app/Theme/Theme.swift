@@ -9,6 +9,8 @@ import SwiftUI
 
 enum Theme {
     static let name = "Standard"
+    /// Force one appearance for the whole app, or nil to follow the system's light/dark setting.
+    static let appearance: NSAppearance.Name? = nil
 
     static func font(_ role: FontRole) -> Font {
         switch role {

@@ -22,6 +22,7 @@ struct AnnexApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let name = Theme.appearance { NSApp.appearance = NSAppearance(named: name) }
         AppModel.shared.start()
     }
 
