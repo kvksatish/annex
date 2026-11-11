@@ -134,19 +134,41 @@
     });
 }
 
+static NSString *readFailure(void) {
+    return errno == 0 ? @"the sender closed the connection"
+         : (errno == EAGAIN || errno == EWOULDBLOCK) ? @"no data for 5 s (timeout)"
+         : [NSString stringWithFormat:@"read error %d (%s)", errno, strerror(errno)];
+}
+
 - (void)readFrom:(int)fd {
+    uint64_t start = ANXNowNanos(), last = start, frames = 0, pings = 0;
     for (;;) {
         uint8_t hdr[5];
-        if (!ANXReadAll(fd, hdr, 5)) return;
+        errno = 0;
+        if (!ANXReadAll(fd, hdr, 5)) {
+            ANXLog(@"Receiver: ended after %.1f s, %llu frames, %llu pings; last message %.1f s ago; %@",
+                   (ANXNowNanos() - start) / 1e9, frames, pings, (ANXNowNanos() - last) / 1e9, readFailure());
+            return;
+        }
         uint32_t len; memcpy(&len, hdr, 4); len = ntohl(len) - 1;
-        if (len > (64u << 20)) return;
+        if (len > (64u << 20)) { ANXLog(@"Receiver: bad message length %u, type %u", len, hdr[4]); return; }
         uint8_t *buf = len ? malloc(len) : NULL;
-        if (len && !ANXReadAll(fd, buf, len)) { free(buf); return; }
+        errno = 0;
+        if (len && !ANXReadAll(fd, buf, len)) {
+            ANXLog(@"Receiver: ended mid-message (%u bytes, type %u); %@", len, hdr[4], readFailure());
+            free(buf); return;
+        }
+        last = ANXNowNanos();
+        if (hdr[4] == ANXMessageFrame) frames++;
+        if (hdr[4] == ANXMessagePing) pings++;
         switch (hdr[4]) {
             case ANXMessageParams: [self setParams:buf length:len]; free(buf); break;
             case ANXMessageFrame: [self showFrame:buf length:len]; break;   // takes ownership of buf
             case ANXMessagePing:
-                if (!ANXSendMessage(fd, ANXMessagePong, buf, len)) { free(buf); return; }
+                if (!ANXSendMessage(fd, ANXMessagePong, buf, len)) {
+                    ANXLog(@"Receiver: couldn't reply to a ping: %d (%s)", errno, strerror(errno));
+                    free(buf); return;
+                }
                 free(buf); break;
             default: free(buf);
         }
